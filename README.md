@@ -49,10 +49,12 @@ Create a new SSH key-pair
 sudo su - git -c "ssh-keygen -t ed25519"
 ```
 
-Assuming the GitLab container was started with `--volume /srv/gitlab/ssh:/gitlab-data/ssh:Z`, copy and rename the public key to `/srv/gitlab/ssh/authorized_keys`.
+Copy the public key to GitLab auth file. Its location is defined in configuration with `gitlab_shell['auth_file']` and by default is under `/var/opt/gitlab/.ssh/authorized_keys`.
+
+Assuming the GitLab container was started with `--volume /srv/gitlab/data:/var/opt/gitlab:Z` as a data volume, add the public key to `/srv/gitlab/data/.ssh/authorized_keys`.
 
 ```bash
-sudo cp /home/git/.ssh/id_ed25519.pub /srv/gitlab/ssh/authorized_keys
+sudo cat /home/git/.ssh/id_ed25519.pub >> /srv/gitlab/data/.ssh/authorized_keys
 ```
 
 Fix the permission/ownership of the `authorized_keys` file to ensure that is only readable by the `git` user within the container. Otherwise SSH won't use the file.
@@ -60,7 +62,7 @@ Fix the permission/ownership of the `authorized_keys` file to ensure that is onl
 ```bash
 # If you are using Docker, substitute podman with docker
 podman exec -it gitlab /bin/sh -c \
-    "chmod 600 /gitlab-data/ssh/authorized_keys; chown git:git /gitlab-data/ssh/authorized_keys"
+    "chmod 600 /var/opt/gitlab/.ssh/authorized_keys; chown git:git /var/opt/gitlab/.ssh/authorized_keys"
 ```
 
 Reload the SSH Service
